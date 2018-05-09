@@ -1,3 +1,4 @@
+require 'dotenv/load'
 require 'rest-client'
 require 'colorize'
 require 'json'
@@ -9,8 +10,8 @@ class VipTrade
   MARKET_NAME = 'btc_idr'
   CURRENCY = 'btc'
   KURS = 13900
-  API_KEY = 'YOUR VIP API KEY'
-  API_SECRET = 'YOUR VIP SECRET KEY'
+  API_KEY = ENV['VIP_API_KEY']
+  API_SECRET = ENV['VIP_SECET_KEY']
   URIs = {
     public: {
       ticker: '/api/btc_idr/ticker/',
@@ -74,7 +75,12 @@ class VipTrade
       when "order_book"
         url = sprintf(url, params[:market])
     end
-    nonce = (Time.now.to_i + 10).to_s
+    # nonce = (Time.now.to_i + 10).to_s
+    epoch_mirco = Time.now.to_f
+    epoch_full = Time.now.to_i
+    epoch_fraction = epoch_mirco - epoch_full
+
+    nonce = epoch_fraction + epoch_full
     url = url + "&nonce=#{nonce}" if ["market","account"].include? params[:api_type]
     return url
   end

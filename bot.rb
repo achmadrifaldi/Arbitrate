@@ -1,15 +1,15 @@
+require 'dotenv/load'
 require 'telegram/bot'
 require 'mysql2'
 require_relative 'arbitrate_bot'
 
-telegram_token = 'YOUR TELEGRAM TOKEN'
-
 # Define Database Connection
-db_host = 'DB HOST'
-db_username = 'DB USERNAME'
-db_password = 'DB PASSWORD'
-db_name = 'DB NAME'
-client = Mysql2::Client.new(host: db_host, username: db_username, password: db_password, database: db_name)
+client = Mysql2::Client.new(
+  host: ENV['DB_HOST'],
+  username: ENV['DB_USERNAME'],
+  password: ENV['DB_PASSWORD'],
+  database: ENV['DB_NAME']
+)
 
 # Define Variable
 command, flag = nil
@@ -42,7 +42,7 @@ def startrade(client, user_id)
   end
 end
 
-Telegram::Bot::Client.run(telegram_token) do |bot|
+Telegram::Bot::Client.run(ENV['TELEGRAM_TOKEN']) do |bot|
   begin
     bot.listen do |message|
 
@@ -107,6 +107,11 @@ Telegram::Bot::Client.run(telegram_token) do |bot|
 
           trade = startrade(client, message.from.id)
           bot.api.send_message(chat_id: message.chat.id, text: trade, parse_mode: 'HTML')
+        when '/balance'
+          arbitrate = ArbitrateBot.new
+          text = arbitrate.balance
+
+          bot.api.send_message(chat_id: message.chat.id, text: text, parse_mode: 'HTML')
         when '/setlot'
           # Reset var from previous command
           command, flag = nil
@@ -134,17 +139,15 @@ Telegram::Bot::Client.run(telegram_token) do |bot|
           text += "/setlot - Change lot coin\n"
           text += "/setspread - Change spread coin\n"
           text += "/info - Get your setting info\n"
+          text += "/balance - Get balance information from VIP and BINANCE\n"
+          text += "/startrade - Start trading\n"
 
           bot.api.send_message(chat_id: message.chat.id, text: text)
         end
       end
     end
-  rescue
-    if e.error_code.to_s == '502'
-      puts 'telegram stuff, nothing to worry!'
-    else
-      puts e.inspect
-    end
+  rescue => e
+    puts e.inspect
     retry
   end
 end

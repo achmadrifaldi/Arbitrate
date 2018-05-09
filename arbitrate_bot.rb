@@ -1,5 +1,5 @@
+require 'dotenv/load'
 require 'rubygems'
-require 'telegram/bot'
 require 'binance-ruby'
 require_relative 'vip_trade'
 
@@ -20,8 +20,8 @@ class ArbitrateBot
   def trade!(lot, kurs, spread)
     text = ""
 
-    Binance::Api::Configuration.api_key = 'BINANCE API KEY'
-    Binance::Api::Configuration.secret_key = 'BINANCE SECRET KEY'
+    Binance::Api::Configuration.api_key = ENV['BINANCE_API_KEY']
+    Binance::Api::Configuration.secret_key = ENV['BINANCE_SECRET_KEY']
 
     start_count = 0
     counter = 0
@@ -102,6 +102,39 @@ class ArbitrateBot
     end
 
     puts "Finish Trade"
+    return text
+  end
+
+  def balance
+    text = ""
+
+    begin
+      binance_assets = Binance::Api.info!(recvWindow: 10000)
+      bn_usdt = binance_assets[:balances].find {|x| x[:asset] == "USDT"}[:free].to_f
+      bn_btc = binance_assets[:balances].find {|x| x[:asset] == "BTC"}[:free].to_f
+      text += "<b>BINANCE BALANCE</b>\n"
+      text += "USDT: #{bn_usdt}\n"
+      text += "BTC: #{bn_btc}\n"
+    rescue => e
+      text += "<b>Failed to get BINANCE Info</b>\n"
+      text += e.inspect.to_s
+      text += "\n\n"
+    end
+
+    begin
+      vip_btc = VipTrade.new
+      vip_assets = vip_btc.info
+      vip_idr = vip_assets['balance']['idr']
+      vip_btc = vip_assets['balance']['btc']
+      text += "<b>VIP BALANCE</b>\n"
+      text += "IDR: #{vip_idr}\n"
+      text += "BTC: #{vip_btc}\n"
+    rescue => e
+      text += "<b>Failed to get VIP Info</b>\n"
+      text += e.inspect.to_s
+      text += "\n\n"
+    end
+
     return text
   end
 end
