@@ -78,20 +78,20 @@ class ArbitrateBot
 
       if bnbuy_vipsell >= spread
         # Sell in VIP
-        # vip_btc.sell(qty)
+        vip_btc.sell(qty)
 
         # Buy 15$ BTC
-        # Binance::Api::Order.create!(symbol: 'BTCUSDT', side: 'BUY', type: 'LIMIT', price: bn_sell, quantity: qty, timeInForce: 'GTC')
+        Binance::Api::Order.create!(symbol: 'BTCUSDT', side: 'BUY', type: 'LIMIT', price: bn_sell, quantity: qty, timeInForce: 'GTC')
 
         current_asset = my_asset(kurs).to_i
         text += "<b>Current Asset: #{current_asset}</b>\n"
         text += "<b>Profit: #{current_asset - initial_asset}</b>\n\n"
       elsif vipbuy_bnsell >= spread
         # Sell in VIP
-        # vip_btc.buy(qty)
+        vip_btc.buy(qty)
 
         # Buy 15$ BTC
-        # Binance::Api::Order.create!(symbol: 'BTCUSDT', side: 'SELL', type: 'LIMIT', price: bn_sell, quantity: qty, timeInForce: 'GTC')
+        Binance::Api::Order.create!(symbol: 'BTCUSDT', side: 'SELL', type: 'LIMIT', price: bn_sell, quantity: qty, timeInForce: 'GTC')
 
         current_asset = my_asset(kurs).to_i
         text += "<b>Current Asset: #{current_asset}</b>\n"
